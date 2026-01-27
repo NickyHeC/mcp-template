@@ -2,7 +2,7 @@
 
 A template MCP (Model Context Protocol) server for quickly starting a new project using the dedalus_mcp framework.
 
-## Overall Process for Creating an MCP Server Using Dedalus
+## Process for Creating an MCP Server Using Dedalus
 
 Follow these steps to build your MCP server from this template:
 
@@ -40,16 +40,18 @@ Use a coding agent to construct this structure based on the template.
 
 ### 4. Configure the Server (`main.py`)
 
-Copy the template `main.py` and customize it:
+Copy the template `main.py` and customize it. This file is the entry point of the MCP server and follows a clean separation between server setup and tool definitions:
 
-- **Server Instance**: Update the `MCPServer` name identifier
-- **Main Function**: Configure the port (default: 8080) and ensure it collects tools from `tools.py`
+- **Server Instance**: Creates an `MCPServer` instance with a name identifier (update this to match your project)
+- **Main Function**: An async function that:
+  - Collects all tools from the `tools.py` module using `server.collect()`
+  - Starts the server on a specified port (default: 8080)
 
-The server uses `server.collect()` to register tools decorated with the `@tool` decorator. Reference your `PROJECT.md` for platform-specific configuration needs.
+The server uses `server.collect()` to register tools decorated with the `@tool` decorator, making them available to MCP clients. Reference your `PROJECT.md` for platform-specific configuration needs.
 
 ### 5. Implement Tools (`tools.py`)
 
-Define your tools based on desired features:
+Define your tools based on desired features. The `tools.py` file contains tool definitions and implementations with a clean separation from server configuration:
 
 - **Result Models**: Create Pydantic models (extending `BaseModel`) that define the structure of tool return values
 - **Tool Functions**: Implement functions decorated with `@tool` that:
@@ -58,6 +60,8 @@ Define your tools based on desired features:
   - Return a Pydantic model instance
   - Include docstrings for additional documentation
 - **Tools List**: Export all tools in a `tools` list for automatic collection by the server
+
+The server automatically collects and registers all tools from the `tools` list, making them available to MCP clients.
 
 The template includes an example tool (`example_tool`) demonstrating:
 - Input parameters with type hints
@@ -95,25 +99,3 @@ Generate or update `README.md` with:
 ### 8. Deploy to Dedalus Labs
 
 Upload your server to [dedaluslabs.ai](https://dedaluslabs.ai) and debug as necessary. Ensure all environment variables and credentials are properly configured in the deployment environment.
-
----
-
-## Server Architecture
-
-This template follows a clean separation between server setup and tool definitions:
-
-### main.py
-
-The entry point of the MCP server:
-- Creates an `MCPServer` instance with a name identifier
-- Collects all tools from the `tools.py` module using `server.collect()`
-- Starts the server on a specified port (default: 8080)
-
-### tools.py
-
-Contains tool definitions and implementations:
-- **Result Models**: Pydantic models defining return value structures
-- **Tool Functions**: Functions decorated with `@tool` implementing functionality
-- **Tools List**: Exports all available tools for automatic collection
-
-The server automatically collects and registers all tools from the `tools` list, making them available to MCP clients.
