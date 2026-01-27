@@ -1,0 +1,20 @@
+[project]
+name = "mcp-template"
+version = "0.1.0"
+description = "A template MCP server for quick starting a project"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "dedalus-mcp",
+    "pydantic",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatchling.build]
+targets.wheel.packages = ["src"]
