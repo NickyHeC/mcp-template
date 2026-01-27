@@ -36,7 +36,7 @@ project-root/
 └── README.md               # Project documentation
 ```
 
-Use a coding agent to construct this structure based on the template.
+Use a coding agent to construct this structure based on the template, and ask it to not fill in the files.
 
 ### 4. Configure the Server (`main.py`)
 
