@@ -86,6 +86,7 @@ Reference your `PROJECT.md` for notes on tools and features.
 
 3. Test with a real use case to verify functionality
 4. The server will start on port 8080 and be ready to accept MCP client connections
+5. Compile your server locally
 
 ### 7. Document Your Project
 
