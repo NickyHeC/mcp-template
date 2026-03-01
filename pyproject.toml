@@ -1,12 +1,13 @@
 [project]
 name = "mcp-template"
 version = "0.1.0"
-description = "A template MCP server for quick starting a project"
+description = "A template MCP server for quickly starting a new project"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "dedalus-mcp",
     "pydantic",
+    "python-dotenv",
 ]
 
 [project.optional-dependencies]

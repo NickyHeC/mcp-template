@@ -2,22 +2,29 @@ from dedalus_mcp import tool
 from pydantic import BaseModel
 
 
+# --- Result Models ---
+# Define Pydantic models for structured tool responses.
+# Each tool should return a model so clients receive typed, predictable data.
+
+
 class ExampleResult(BaseModel):
     message: str
     value: int
 
 
-@tool(description="An example tool that demonstrates the basic structure")
+# --- Tool Definitions ---
+# Decorate functions with @tool to expose them to MCP clients.
+# The description appears in tool listings; the docstring provides extra detail.
+
+
+@tool(description="An example tool that processes text and returns a result")
 def example_tool(input_text: str, multiplier: int = 1) -> ExampleResult:
     """
-    An example tool that processes input and returns a result.
-    
+    Process input text and return a structured result.
+
     Args:
-        input_text: A text input to process
-        multiplier: A multiplier value (default: 1)
-    
-    Returns:
-        ExampleResult with a message and computed value
+        input_text: The text to process.
+        multiplier: Multiplies the computed value (default: 1).
     """
     processed_value = len(input_text) * multiplier
     return ExampleResult(
@@ -25,5 +32,8 @@ def example_tool(input_text: str, multiplier: int = 1) -> ExampleResult:
         value=processed_value,
     )
 
+
+# --- Tool Registry ---
+# List every tool here. main.py iterates this list to register them with the server.
 
 tools = [example_tool]

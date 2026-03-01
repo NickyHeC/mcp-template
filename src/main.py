@@ -1,37 +1,39 @@
 import os
-import sys
 import asyncio
-from pathlib import Path
 from dotenv import load_dotenv
 from dedalus_mcp import MCPServer
 from dedalus_mcp.auth import Connection, SecretKeys
 
-# Load environment variables from .env file
+from src.tools import tools
+
 load_dotenv()
 
-# Define Discord connection for token secret
-# Replace name in name_connection with name of platform name of the mcp server
-name_connection = Connection(
-    # Replace name with of platform name of the mcp server
-    name="name",
-    # Replace TOKEN with credential name
-    secrets=SecretKeys(token="CREDENTIAL"),
-    # Replace URL with platform base url
-    base_url="URL",
-    # Replace Format {type} with the credential type of the connection
-    auth_header_format="Format {type}",
+# --- DAuth Connection ---
+# A Connection configures DAuth (Dedalus Auth) for one external platform.
+# It defines the platform name, credential key, base URL, and auth header format.
+# DAuth keeps secrets inside a sealed enclave — your code never sees raw keys.
+# For details see the README or https://docs.dedaluslabs.ai/dmcp/connections
+
+platform_connection = Connection(
+    # A short identifier for this connection (e.g. "github", "slack", "discord")
+    name="platform",
+    # The credential key the user will provide (e.g. "GITHUB_TOKEN")
+    secrets=SecretKeys(token="API_TOKEN"),
+    # The base URL of the platform's API (e.g. "https://api.github.com")
+    base_url="https://api.example.com",
+    # How the token is attached to the Authorization header.
+    # Common formats: "Bearer {api_key}", "token {api_key}", "Bot {api_key}"
+    auth_header_format="Bearer {api_key}",
 )
 
-# Handle imports for both package and direct execution
-# Set up logging first to capture import errors
-
 # --- Server ---
+# The MCPServer ties everything together: it registers your DAuth connections,
+# points to the Dedalus authorization server, and exposes your tools over HTTP.
 
 server = MCPServer(
-    # Replace name with of platform name of the mcp server
-    name="name-mcp",
-    # Replace name with of platform name of the mcp server
-    connections=[name_connection],
+    # A unique name for your MCP server (e.g. "github-mcp", "slack-mcp")
+    name="my-mcp",
+    connections=[platform_connection],
     authorization_server=os.getenv("DEDALUS_AS_URL", "https://as.dedaluslabs.ai"),
     streamable_http_stateless=True,
 )

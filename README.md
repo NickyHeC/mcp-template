@@ -1,102 +1,98 @@
 # mcp-template
 
-A template MCP (Model Context Protocol) server for quickly starting a new project using the dedalus_mcp framework.
+A starter template for building MCP (Model Context Protocol) servers with the [dedalus_mcp](https://docs.dedaluslabs.ai/dmcp) framework. Authentication is handled by **DAuth** (Dedalus Auth).
 
-## Process for Creating an MCP Server Using Dedalus
+## What is DAuth?
 
-Follow these steps to build your MCP server from this template:
+[DAuth](https://www.dedaluslabs.ai/blog/dedalus-auth-launch) is a multi-tenant authentication layer for MCP servers built by Dedalus Labs. It solves a core problem in the MCP ecosystem: most servers require API keys or tokens, but the MCP spec doesn't define how non-OAuth credentials should be handled securely. Without DAuth, developers either build their own auth infrastructure or pass raw secrets around — both are bad options.
 
-### 1. Research and Document the Target Platform API
+DAuth is **zero-trust** and **host-blind** — Dedalus never sees your raw API keys. Here's how it works:
 
-Read the API documentation of your target platform to understand:
-- Available features and endpoints
-- API restrictions and rate limits
-- Authentication requirements
-- Data formats and response structures
+1. The SDK **encrypts credentials client-side** before they leave your device.
+2. When a request reaches your MCP server, it acts as a standard **OAuth 2.1 Resource Server** — access is verified without touching the credential.
+3. Authenticated requests are forwarded to **the Enclave**, a network-isolated, hardware-secured execution environment written in Rust.
+4. Inside the Enclave, the credential is **decrypted for milliseconds**, used to call the external API, then **zeroed from memory**.
+5. Only the API **response** is returned — the raw secret is never exposed to your server code, to Dedalus, or to the network.
 
-**Tip**: Create a `PROJECT.md` file to document your findings. This will serve as context for coding agents in later steps.
+This means your MCP server only holds an opaque connection handle, never a raw key. DAuth is built into the `dedalus_mcp` SDK, takes minutes to integrate, and works across all auth types (Bearer tokens, API keys, OAuth, etc.).
 
-### 2. Set Up API Access
+In this template, the `Connection` object in `main.py` is how you configure DAuth for your target platform.
 
-- Identify the required API access keys and tokens
-- Create an application/account according to platform requirements if necessary
-- Securely store credentials (use environment variables, not hardcoded values)
-
-### 3. Initialize Project Structure
-
-Create a GitHub repository and set up the project structure:
+## Project Structure
 
 ```
 project-root/
 ├── src/
-│   ├── main.py             # Entry point and server configuration
-│   └── tools.py            # Tool definitions and implementations
-├── pyproject.toml          # Project metadata and dependencies
-├── PROJECT.md              # Your platform research notes (optional)
-└── README.md               # Project documentation
+│   ├── main.py      # Server entry point and configuration
+│   ├── tools.py     # Tool definitions and implementations
+│   └── client.py    # Test client for local debugging
+├── pyproject.toml   # Dependencies and build config
+├── PROJECT.md       # Your platform research notes (optional)
+└── README.md
 ```
 
-Use a coding agent to construct this structure based on the template, and ask it to not fill in the files.
+## How to Build an MCP Server from This Template
 
-### 4. Configure the Server (`main.py`)
+### 1. Research the Target Platform API
 
-Copy the template `main.py` and customize it. This file is the entry point of the MCP server and follows a clean separation between server setup and tool definitions:
+Read the API docs for the platform you want to integrate. Note:
 
-- **Server Instance**: Creates an `MCPServer` instance with a name identifier (update this to match your project)
-- **Main Function**: An async function that:
-  - Collects all tools from the `tools.py` module using `server.collect()`
-  - Starts the server on a specified port (default: 8080)
+- Available endpoints and features
+- Authentication method (Bearer token, API key, OAuth, etc.)
+- Rate limits and restrictions
+- Response formats
 
-The server uses `server.collect()` to register tools decorated with the `@tool` decorator, making them available to MCP clients. Reference your `PROJECT.md` for platform-specific configuration needs.
+**Tip:** Save your notes in a `PROJECT.md` file — it serves as useful context for coding agents in later steps.
 
-### 5. Implement Tools (`tools.py`)
+### 2. Set Up API Access
 
-Define your tools based on desired features. The `tools.py` file contains tool definitions and implementations with a clean separation from server configuration:
+- Obtain the required API keys or tokens.
+- Create an application/account on the platform if needed.
+- Store credentials in environment variables (never hardcode them).
 
-- **Result Models**: Create Pydantic models (extending `BaseModel`) that define the structure of tool return values
-- **Tool Functions**: Implement functions decorated with `@tool` that:
-  - Include a clear description in the decorator
-  - Accept typed parameters (with optional defaults)
-  - Return a Pydantic model instance
-  - Include docstrings for additional documentation
-- **Tools List**: Export all tools in a `tools` list for automatic collection by the server
+### 3. Configure the Server and DAuth (`main.py`)
 
-The server automatically collects and registers all tools from the `tools` list, making them available to MCP clients.
+Customize `main.py` with your platform's details:
 
-The template includes an example tool (`example_tool`) demonstrating:
-- Input parameters with type hints
-- Optional parameters with default values
-- Returning structured data using a Pydantic model
-- Basic processing logic
+1. **DAuth Connection** — Update `platform_connection` with your platform's name, credential key, base URL, and auth header format. This `Connection` object tells DAuth *which* platform to authenticate with and *how* to attach the credential (see [What is DAuth?](#what-is-dauth) above). The inline comments in `main.py` include concrete examples.
+2. **Server name** — Change `"my-mcp"` to something descriptive (e.g. `"github-mcp"`).
 
-You can modify or replace this example with your own implementations.
-Reference your `PROJECT.md` for notes on tools and features.
+The server registers tools via `server.collect()` and serves them over HTTP.
 
-### 6. Test Locally
+### 4. Implement Tools (`tools.py`)
 
-1. Install dependencies:
-   ```bash
-   pip install -e .
-   ```
+Define the tools your server will expose:
 
-2. Run the server:
-   ```bash
-   python -m src.main
-   ```
+1. **Result models** — Create Pydantic `BaseModel` subclasses for structured return values.
+2. **Tool functions** — Decorate functions with `@tool(description="...")`. Use type hints for parameters and return a Pydantic model.
+3. **Tool registry** — Add every tool to the `tools` list at the bottom of the file so the server can find them.
 
-3. Test with a real use case to verify functionality
-4. The server will start on port 8080 and be ready to accept MCP client connections
-5. Compile your server locally
+The included `example_tool` demonstrates this pattern. Replace or extend it with your own implementations.
 
-### 7. Document Your Project
+### 5. Test Locally
 
-Generate or update `README.md` with:
-- Project overview and purpose
-- Installation and usage instructions
-- Available tools and their descriptions
-- Configuration requirements
-- Examples and use cases
+Install dependencies and start the server:
 
-### 8. Deploy to Dedalus Labs
+```bash
+pip install -e .
+python -m src.main
+```
 
-Upload your server to [dedaluslabs.ai](https://dedaluslabs.ai) and debug as necessary. Ensure all environment variables and credentials are properly configured in the deployment environment.
+The server starts on port 8080. Use the included test client to verify:
+
+```bash
+python -m src.client
+```
+
+### 6. Document Your Project
+
+Update this README with:
+
+- What your server does
+- Available tools and their parameters
+- Configuration and environment variables
+- Usage examples
+
+### 7. Deploy to Dedalus Labs
+
+Upload your server to [dedaluslabs.ai](https://dedaluslabs.ai). DAuth handles credential security automatically in production. Make sure all environment variables are configured in the deployment environment.

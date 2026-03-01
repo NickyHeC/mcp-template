@@ -1,18 +1,30 @@
-# client.py
-from dedalus_mcp.client import MCPClient
-import asyncio
+"""
+Test client for the MCP server.
 
-async def main():
-    client = await MCPClient.connect("http://127.0.0.1:8000/mcp")
-    
-    # List available tools
+Start the server first:
+    python -m src.main
+
+Then run this script to verify your tools work:
+    python -m src.client
+"""
+
+import asyncio
+from dedalus_mcp.client import MCPClient
+
+
+async def main() -> None:
+    client = await MCPClient.connect("http://127.0.0.1:8080/mcp")
+
+    # List all registered tools
     tools = await client.list_tools()
-    print([t.name for t in tools.tools])  # ['add', 'multiply']
-    
-    # Call a tool
-    result = await client.call_tool("add", {"a": 2, "b": 3})
-    print(result.content[0].text)  # "5"
-    
+    print("Available tools:", [t.name for t in tools.tools])
+
+    # Call a tool by name, passing its expected arguments
+    result = await client.call_tool("example_tool", {"input_text": "hello", "multiplier": 3})
+    print("Result:", result.content[0].text)
+
     await client.close()
 
-asyncio.run(main())
+
+if __name__ == "__main__":
+    asyncio.run(main())
