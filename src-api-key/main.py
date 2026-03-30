@@ -1,18 +1,31 @@
+"""API Key MCP server.
+
+Use this template when the target platform authenticates with a static
+credential — API key, personal access token, bot token, etc.
+
+DAuth encrypts the credential client-side and executes API calls inside a
+sealed enclave. Your server code never sees the raw key.
+
+To use this template, rename this folder to src/:
+    mv src-api-key src
+"""
+
 import os
 import asyncio
 from dotenv import load_dotenv
 from dedalus_mcp import MCPServer
+from dedalus_mcp.server import TransportSecuritySettings
 from dedalus_mcp.auth import Connection, SecretKeys
 
 from src.tools import tools
 
 load_dotenv()
 
-# --- DAuth Connection ---
+# --- DAuth Connection (API Key) ---
 # A Connection configures DAuth (Dedalus Auth) for one external platform.
-# It defines the platform name, credential key, base URL, and auth header format.
 # DAuth keeps secrets inside a sealed enclave — your code never sees raw keys.
-# For details see the README or https://docs.dedaluslabs.ai/dmcp/connections
+# See README.md > "Choose Your Auth Framework" for guidance.
+# Docs: https://docs.dedaluslabs.ai/dmcp/connections
 
 platform_connection = Connection(
     # A short identifier for this connection (e.g. "github", "slack", "discord")
@@ -26,20 +39,21 @@ platform_connection = Connection(
     auth_header_format="Bearer {api_key}",
 )
 
-# --- Server ---
-# The MCPServer ties everything together: it registers your DAuth connections,
-# points to the Dedalus authorization server, and exposes your tools over HTTP.
 
-server = MCPServer(
-    # A unique name for your MCP server (e.g. "github-mcp", "slack-mcp")
-    name="my-mcp",
-    connections=[platform_connection],
-    authorization_server=os.getenv("DEDALUS_AS_URL", "https://as.dedaluslabs.ai"),
-    streamable_http_stateless=True,
-)
+def create_server() -> MCPServer:
+    as_url = os.getenv("DEDALUS_AS_URL", "https://as.dedaluslabs.ai")
+    return MCPServer(
+        # A unique name for your MCP server (e.g. "github-mcp", "slack-mcp")
+        name="my-mcp",
+        connections=[platform_connection],
+        http_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+        streamable_http_stateless=True,
+        authorization_server=as_url,
+    )
 
 
 async def main() -> None:
+    server = create_server()
     for tool_func in tools:
         server.collect(tool_func)
     await server.serve(port=8080)
