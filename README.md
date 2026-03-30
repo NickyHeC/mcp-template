@@ -148,6 +148,8 @@ Read the API docs for the platform you want to integrate. Note:
 
 Save your notes in `PROJECT.md` — it serves as context for you and for AI coding agents in later steps. The file is pre-formatted with sections for all the information you'll need.
 
+**Tip:** Once your `PROJECT.md` is filled in, you can hand the project off to an AI coding agent with a prompt like: *"Build my MCP server based on this template and the notes in PROJECT.md."* The agent can read the template files, your research notes, and this README to implement the full server with minimal back-and-forth.
+
 ### 2. Choose an Auth Framework and Rename the Folder
 
 Based on your research, pick the right auth framework from the table above. Rename the chosen folder to `src/` and remove the others:
