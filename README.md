@@ -45,7 +45,7 @@ Requires Node.js >= 18. The generated project is pure Python.
 Clone this repo and rename the `src-*` folder that matches your auth type:
 
 ```bash
-git clone https://github.com/NickyHeC/template-dauth-mcp.git my-mcp-server
+git clone https://github.com/NickyHeC/mcp-template.git my-mcp-server
 cd my-mcp-server
 mv src-api-key src
 rm -rf src-no-auth src-oauth
