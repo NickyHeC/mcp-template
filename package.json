@@ -37,8 +37,10 @@
     "src-no-auth",
     "src-api-key",
     "src-oauth",
+    "pyproject.toml",
     "PROJECT.md",
-    ".env.example"
+    ".env.example",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18.0.0"

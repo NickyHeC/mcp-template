@@ -1,4 +1,19 @@
 #!/usr/bin/env node
+//
+// create-dmcp — interactive CLI that scaffolds a new Dedalus MCP server project.
+//
+// Usage:
+//   npx create-dmcp              # interactive prompts
+//   npx create-dmcp my-server    # skip the project-name prompt
+//
+// What it does:
+//   1. Asks for project name, auth type, and package manager.
+//   2. Copies the matching src-* template folder into <project>/src/.
+//   3. Copies shared files (pyproject.toml, .env.example, PROJECT.md, LICENSE).
+//   4. Replaces placeholder values (server name, package name) with the project slug.
+//   5. Generates a .gitignore for the new project.
+//   6. Auto-installs Python dependencies with uv or pip.
+//
 
 import prompts from "prompts";
 import pc from "picocolors";
@@ -7,6 +22,7 @@ import path from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
+// Resolve paths relative to the package root (one level up from cli/ or dist/)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 
@@ -43,6 +59,7 @@ const AUTH_LABELS: Record<AuthType, string> = {
   oauth: "OAuth",
 };
 
+/** Convert a project name into a URL/identifier-safe slug. */
 function toSlug(name: string): string {
   return name
     .toLowerCase()
@@ -51,7 +68,9 @@ function toSlug(name: string): string {
     .replace(/^-|-$/g, "");
 }
 
+/** Collect project configuration from CLI args and interactive prompts. */
 async function getConfig(): Promise<Config | null> {
+  // Allow the project name to be passed as a positional arg (npx create-dmcp my-server)
   const argName = process.argv[2];
 
   const response = await prompts(
@@ -98,6 +117,10 @@ async function getConfig(): Promise<Config | null> {
   };
 }
 
+/**
+ * Recursively copy a directory, applying string replacements to every file.
+ * Used to stamp out the chosen src-* template with project-specific values.
+ */
 function copyTemplate(
   src: string,
   dest: string,
@@ -121,6 +144,7 @@ function copyTemplate(
   }
 }
 
+/** Run the chosen package manager to install Python dependencies. */
 function installDeps(config: Config, projectDir: string) {
   const { packageManager } = config;
   console.log(pc.dim(`  Installing dependencies with ${packageManager}...`));
@@ -166,21 +190,23 @@ async function main() {
   console.log(`  ${pc.dim("Package:")} ${packageManager}`);
   console.log();
 
+  // Replace placeholder server name and package name with the project slug
   const replacements: [string, string][] = [
     ['name="my-mcp"', `name="${slug}"`],
-    ['name = "mcp-template"', `name = "${projectName}"`],
+    ['name = "mcp-template"', `name = "${slug}"`],
   ];
 
-  // Copy template → project/src/
+  // Copy the chosen src-* template into <project>/src/
   const srcDir = path.join(projectDir, "src");
   copyTemplate(templateDir, srcDir, replacements);
 
-  // Copy shared files
+  // Copy pyproject.toml with the project slug substituted
   const pyprojectSrc = path.join(ROOT, "pyproject.toml");
   let pyproject = fs.readFileSync(pyprojectSrc, "utf-8");
-  pyproject = pyproject.replaceAll("mcp-template", projectName);
+  pyproject = pyproject.replaceAll("mcp-template", slug);
   fs.writeFileSync(path.join(projectDir, "pyproject.toml"), pyproject);
 
+  // Copy shared files that don't need string replacement
   const sharedFiles = [".env.example", "PROJECT.md", "LICENSE"];
   for (const file of sharedFiles) {
     const filePath = path.join(ROOT, file);
@@ -189,8 +215,8 @@ async function main() {
     }
   }
 
-  // Write .gitignore (the template's .gitignore is in the repo root but
-  // npm strips dotfiles from published packages, so we generate it)
+  // Generate a .gitignore for the new project.
+  // npm strips dotfiles from published packages, so we write it here.
   fs.writeFileSync(
     path.join(projectDir, ".gitignore"),
     [

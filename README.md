@@ -2,7 +2,7 @@
 
 A starter template for building MCP (Model Context Protocol) servers with the [dedalus_mcp](https://docs.dedaluslabs.ai/dmcp) framework. Authentication is handled by **DAuth** (Dedalus Auth).
 
-This template supports three auth frameworks — **No Auth**, **API Key**, and **OAuth**. Each has its own `src-*` folder with a complete, ready-to-run server. Pick one, rename it to `src/`, and start building.
+This template supports three auth frameworks — **No Auth**, **API Key**, and **OAuth**. Each has its own `src-*` folder with a complete, ready-to-run server. You can either use the **CLI** to scaffold a new project automatically, or **clone this repo** and rename a folder manually.
 
 ---
 
@@ -22,10 +22,44 @@ This means your MCP server only holds an opaque connection handle, never a raw k
 
 ---
 
+## Quick Start
+
+### Option A: CLI (recommended)
+
+Scaffold a new project with one command. The CLI prompts for your project name, auth type, and package manager, then generates a ready-to-run project with dependencies installed.
+
+```bash
+npx create-dmcp
+```
+
+Or pass the project name directly:
+
+```bash
+npx create-dmcp my-mcp-server
+```
+
+Requires Node.js >= 18. The generated project is pure Python.
+
+### Option B: Clone and rename
+
+Clone this repo and rename the `src-*` folder that matches your auth type:
+
+```bash
+git clone https://github.com/NickyHeC/template-dauth-mcp.git my-mcp-server
+cd my-mcp-server
+mv src-api-key src
+rm -rf src-no-auth src-oauth
+pip install -e .
+```
+
+---
+
 ## Project Structure
 
 ```
 project-root/
+├── cli/                     # CLI scaffolding tool (npx create-dmcp)
+│   └── index.ts
 ├── src-no-auth/             # No Auth — self-contained tools, no credentials
 │   ├── main.py
 │   ├── tools.py
@@ -38,19 +72,22 @@ project-root/
 │   ├── main.py
 │   ├── tools.py
 │   └── client.py
-├── pyproject.toml           # Dependencies and build config
+├── pyproject.toml           # Python dependencies and build config
+├── package.json             # Node.js config for the CLI
+├── tsconfig.json            # TypeScript config for the CLI
 ├── .env.example             # Environment variable reference (per auth type)
 ├── PROJECT.md               # Platform research notepad (for you / your AI agent)
+├── LICENSE
 └── README.md
 ```
 
-Each `src-*` folder is a complete, self-contained server. To use one:
+Each `src-*` folder is a complete, self-contained server. If using the **CLI**, it copies the right template into `<project>/src/` automatically. If **cloning manually**, rename the folder you want:
 
 ```bash
 mv src-api-key src           # rename your chosen template to src/
 ```
 
-The server code expects to live in a folder called `src/` — all internal imports use `from src.tools import ...` and `from src.main import ...`. After renaming, the server is ready to configure and run.
+The server code expects to live in a folder called `src/` — all internal imports use `from src.tools import ...` and `from src.main import ...`. After renaming (or CLI scaffolding), the server is ready to configure and run.
 
 ---
 
@@ -137,6 +174,8 @@ platform_connection = Connection(
 
 ## How to Build an MCP Server from This Template
 
+> If you used the CLI (`npx create-dmcp`), steps 2 is already done — the CLI chose the template, renamed it to `src/`, and installed dependencies. You still need to fill in `.env` (step 3) and configure the server (step 4).
+
 ### 1. Research the Target Platform API
 
 Read the API docs for the platform you want to integrate. Note:
@@ -152,6 +191,8 @@ Save your notes in `PROJECT.md` — it serves as context for you and for AI codi
 
 ### 2. Choose an Auth Framework and Rename the Folder
 
+*Skip this step if you used the CLI — it already did this for you.*
+
 Based on your research, pick the right auth framework from the table above. Rename the chosen folder to `src/` and remove the others:
 
 ```bash
@@ -161,6 +202,8 @@ rm -rf src-no-auth src-api-key
 ```
 
 ### 3. Set Up Environment Variables
+
+*Skip `cp` if you used the CLI — `.env.example` is already in your project.*
 
 ```bash
 cp .env.example .env
@@ -177,10 +220,10 @@ Fill in only the variables for your chosen auth framework. See `.env.example` fo
 Customize `main.py` with your platform's details:
 
 1. **Connection name** — Change `"platform"` to your platform's identifier (e.g. `"github"`, `"linear"`, `"spotify"`).
-2. **Secret key** — Update `SecretKeys(token="API_TOKEN")` to match your credential name.
+2. **Secret key** — Update `SecretKeys(token="...")` to match your credential name. The API Key template uses `"API_TOKEN"`; the OAuth template uses `"ACCESS_TOKEN"`. Rename to match your platform (e.g. `"GITHUB_TOKEN"`, `"LINEAR_ACCESS_TOKEN"`).
 3. **Base URL** — Set to the platform's API root (e.g. `"https://api.github.com"`).
 4. **Auth header format** — Set how the credential is attached. Common formats: `"Bearer {api_key}"`, `"token {api_key}"`, `"Bot {api_key}"`.
-5. **Server name** — Change `"my-mcp"` to something descriptive (e.g. `"github-mcp"`).
+5. **Server name** — Change `"my-mcp"` to something descriptive (e.g. `"github-mcp"`). The CLI does this automatically.
 
 ### 5. Implement Tools (`src/tools.py`)
 
@@ -269,6 +312,12 @@ The `path` is appended to the `base_url` configured in your `Connection` object.
 See `.env.example` for a copy-paste-ready version with sections marked by framework.
 
 ---
+
+## Requirements
+
+- **Python >= 3.10** — for the MCP server
+- **Node.js >= 18** — only needed if using the CLI (`npx create-dmcp`)
+- **uv** (recommended) or **pip** — for Python dependency management
 
 ## Links
 
