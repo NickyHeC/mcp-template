@@ -238,14 +238,29 @@ The template files include example tools demonstrating each pattern.
 
 ### 6. Test Locally
 
-Install dependencies and start the server:
+Install dependencies:
 
 ```bash
 pip install -e .
+```
+
+**Test your connection first** (API Key and OAuth only). Before starting the server, verify that your `Connection` config and credentials actually work:
+
+```bash
+python -m src.client --test-connection
+```
+
+This uses `ConnectionTester` from `dedalus_mcp.testing` to make a real API call to your target platform — no running server needed. Edit the test path in `client.py` to match a lightweight endpoint from your platform (e.g. `/user` for GitHub, `/v1/me` for Spotify). If it prints `OK`, your connection is good.
+
+> **OAuth note:** For local testing you need a valid access token in `.env`. Obtain one from the platform's OAuth playground or developer console. When deployed on Dedalus, DAuth handles the full OAuth flow automatically.
+
+**Then start the server and test tools:**
+
+```bash
 python -m src.main
 ```
 
-The server starts on port 8080. Use the included test client to verify:
+The server starts on port 8080. Use the client to verify your tools:
 
 ```bash
 python -m src.client
