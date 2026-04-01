@@ -262,7 +262,24 @@ Update this README with:
 - Configuration and environment variables
 - Usage examples
 
-### 8. Deploy to Dedalus Labs
+### 8. Clean Up Template Scaffolding
+
+Once your server is built and working, remove leftover template files so the repo only contains your project code. If you're using an AI coding agent, ask it to perform this cleanup as a final step.
+
+**Files to remove:**
+- `PROJECT.md` — your research notes; no longer needed in the final repo
+- Any remaining `src-*` folders (e.g. `src-no-auth/`, `src-api-key/`, `src-oauth/`) that weren't chosen
+- `cli/`, `package.json`, `tsconfig.json` — CLI scaffolding tools, not part of your server
+- `.env.example` — once your `.env` is set up (optional, some teams keep this for onboarding)
+
+**Files to clean up:**
+- `src/tools.py` — remove `ExampleResult` and `example_tool`; only your real tools should remain
+- `src/client.py` — update to call your actual tools with real arguments, or remove if not needed
+- `src/main.py` — remove the placeholder inline comments (e.g. `# A short identifier for this connection...`) once the values are filled in
+- `README.md` — replace the template guide with project-specific documentation (see step 7)
+- `pyproject.toml` — update the project `name` and `description` to match your server
+
+### 9. Deploy to Dedalus Labs
 
 Upload your server to [dedaluslabs.ai](https://dedaluslabs.ai). DAuth handles credential security automatically in production.
 
