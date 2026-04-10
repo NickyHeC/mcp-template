@@ -16,5 +16,5 @@ dev = []
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatchling.build]
-targets.wheel.packages = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
