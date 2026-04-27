@@ -28,9 +28,9 @@ load_dotenv()
 # Docs: https://docs.dedaluslabs.ai/dmcp/connections
 
 platform_connection = Connection(
-    # A short identifier for this connection — use the plain platform name
-    # (e.g. "github", "slack", "notion"), NOT the MCP server name ("notion-mcp").
-    name="platform",
+    # Connection name MUST match the MCPServer name below so the platform
+    # indexes credentials under the same key the tool looks up.
+    name="my-mcp",
     # The credential key the user will provide (e.g. "GITHUB_TOKEN")
     secrets=SecretKeys(token="API_TOKEN"),
     # The base URL of the platform's API (e.g. "https://api.github.com")

@@ -33,9 +33,9 @@ load_dotenv()
 # Docs: https://docs.dedaluslabs.ai/dmcp/connections
 
 platform_connection = Connection(
-    # A short identifier for this connection — use the plain platform name
-    # (e.g. "gmail", "linear", "notion"), NOT the MCP server name ("notion-mcp").
-    name="platform",
+    # Connection name MUST match the MCPServer name below so the platform
+    # indexes stored OAuth tokens under the same key the tool looks up.
+    name="my-mcp",
     # The token name DAuth will provide after OAuth exchange
     secrets=SecretKeys(token="ACCESS_TOKEN"),
     # The base URL of the platform's API (e.g. "https://api.linear.app")

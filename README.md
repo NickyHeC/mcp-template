@@ -136,7 +136,7 @@ Use when the platform authenticates with a static credential that the user provi
 from dedalus_mcp.auth import Connection, SecretKeys
 
 platform_connection = Connection(
-    name="github",
+    name="github-mcp",
     secrets=SecretKeys(token="GITHUB_TOKEN"),
     base_url="https://api.github.com",
     auth_header_format="token {api_key}",
@@ -219,7 +219,7 @@ Fill in only the variables for your chosen auth framework. See `.env.example` fo
 
 Customize `main.py` with your platform's details:
 
-1. **Connection name** — Change `"platform"` to your platform's identifier (e.g. `"github"`, `"linear"`, `"spotify"`).
+1. **Connection name** — Change `"my-mcp"` to match your `MCPServer` name (e.g. `"github-mcp"`, `"linear-mcp"`, `"spotify-mcp"`). The Connection name **must** match the MCPServer name so the platform indexes credentials under the same key the tool looks up.
 2. **Secret key** — Update `SecretKeys(token="...")` to match your credential name. The API Key template uses `"API_TOKEN"`; the OAuth template uses `"ACCESS_TOKEN"`. Rename to match your platform (e.g. `"GITHUB_TOKEN"`, `"LINEAR_ACCESS_TOKEN"`).
 3. **Base URL** — Set to the platform's API root (e.g. `"https://api.github.com"`).
 4. **Auth header format** — Set how the credential is attached. Common formats: `"Bearer {api_key}"`, `"token {api_key}"`, `"Bot {api_key}"`.
